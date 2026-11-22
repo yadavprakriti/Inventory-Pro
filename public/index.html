@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InventoryPro | Management System</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f4f6fb;color:#20283b}
+.app{display:flex;min-height:100vh}
+.sidebar{width:245px;background:#17233e;color:white;padding:28px 18px;flex-shrink:0}
+.brand{font-size:23px;font-weight:bold;margin:0 0 40px 8px}
+.brand span{color:#67d5bd}
+.menu-label{font-size:11px;color:#8492ad;margin:25px 10px 12px;letter-spacing:1.5px}
+.nav{display:block;width:100%;border:0;background:transparent;color:#c5cee0;text-align:left;padding:14px 13px;border-radius:9px;margin:5px 0;cursor:pointer;font-size:14px}
+.nav:hover,.nav.active{background:#2b3c60;color:white}
+.main{flex:1;min-width:0;padding:30px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;gap:15px}
+.topbar h1{font-size:26px}
+.subtitle{color:#8992a4;font-size:13px;margin-top:6px}
+.user{background:white;padding:11px 16px;border-radius:10px;font-size:13px}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:17px;margin-bottom:25px}
+.card{background:white;border-radius:13px;padding:21px;box-shadow:0 3px 14px #1b2b4810}
+.card-label{font-size:13px;color:#8791a4}
+.card-value{font-size:27px;font-weight:bold;margin-top:13px;color:#202b43}
+.card-icon{font-size:22px;margin-bottom:12px}
+.panel{background:white;border-radius:13px;padding:22px;box-shadow:0 3px 14px #1b2b4810;margin-bottom:22px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.panel h2{font-size:18px}
+button{cursor:pointer}
+.primary{background:#4266e8;color:white;border:0;border-radius:8px;padding:11px 17px;font-weight:bold}
+.primary:hover{background:#3152ca}
+.secondary{background:#eef1f8;color:#36425a;border:0;border-radius:8px;padding:10px 14px}
+.danger{background:#fff0f0;color:#d44848;border:0;border-radius:7px;padding:8px 10px}
+.search-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:17px}
+input,select{padding:11px 12px;border:1px solid #dfe3ec;border-radius:8px;background:white;font-size:14px;outline:none}
+input:focus,select:focus{border-color:#4266e8}
+.search-row input{flex:1;min-width:180px}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th{text-align:left;color:#8490a4;font-size:12px;font-weight:600;padding:13px 10px;border-bottom:1px solid #edf0f5}
+td{padding:15px 10px;border-bottom:1px solid #f0f2f6;font-size:13px}
+.table-wrap{overflow-x:auto}
+.pill{padding:6px 9px;border-radius:20px;font-size:11px;background:#e8f8f1;color:#21845d}
+.pill.low{background:#fff0e7;color:#d36a2d}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.small-btn{border:0;background:#edf1ff;color:#4266d8;padding:7px 9px;border-radius:6px;font-size:12px}
+.section{display:none}
+.section.active{display:block}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:7px}
+.field label{font-size:13px;color:#657087}
+.form-actions{display:flex;gap:10px;margin-top:18px}
+.empty{text-align:center;color:#8992a4;padding:30px}
+.notice{padding:12px 15px;border-radius:8px;background:#eef3ff;color:#425d9b;margin-bottom:15px;font-size:13px}
+@media(max-width:1000px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.app{display:block}.sidebar{width:100%;padding:15px}.brand{margin:0 0 12px}.menu-label{display:none}.nav{display:inline-block;width:auto;padding:10px}.main{padding:17px}.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{padding:15px}.card-value{font-size:21px}.topbar h1{font-size:21px}.form-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand">Inventory<span>Pro</span></div>
+  <div class="menu-label">MAIN MENU</div>
+  <button class="nav active" onclick="showSection('dashboard',this)">▦ &nbsp; Dashboard</button>
+  <button class="nav" onclick="showSection('products',this)">▤ &nbsp; Products</button>
+  <button class="nav" onclick="showSection('add',this);resetForm()">＋ &nbsp; Add Product</button>
+  <div class="menu-label">INVENTORY</div>
+  <button class="nav" onclick="showSection('lowstock',this)">⚠ &nbsp; Low Stock</button>
+  <button class="nav" onclick="showSection('reports',this)">▥ &nbsp; Reports</button>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div>
+    <h1 id="pageTitle">Dashboard Overview</h1>
+    <div class="subtitle">Welcome to your inventory management system</div>
+  </div>
+  <div class="user">👤 Administrator</div>
+</header>
+
+<section id="dashboard" class="section active">
+  <div class="cards">
+    <div class="card"><div class="card-icon">📦</div><div class="card-label">Total Products</div><div class="card-value" id="totalProducts">0</div></div>
+    <div class="card"><div class="card-icon">🧮</div><div class="card-label">Total Units</div><div class="card-value" id="totalUnits">0</div></div>
+    <div class="card"><div class="card-icon">💰</div><div class="card-label">Stock Value</div><div class="card-value" id="stockValue">₹0</div></div>
+    <div class="card"><div class="card-icon">⚠️</div><div class="card-label">Low Stock Items</div><div class="card-value" id="lowCount">0</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><h2>Recent Products</h2><button class="secondary" onclick="openProducts()">View all products →</button></div>
+    <div class="table-wrap"><table><thead><tr><th>PRODUCT</th><th>SKU</th><th>CATEGORY</th><th>PRICE</th><th>QUANTITY</th><th>STATUS</th></tr></thead><tbody id="recentBody"></tbody></table></div>
+  </div>
+</section>
+
+<section id="products" class="section">
+  <div class="panel">
+    <div class="panel-head"><h2>All Products</h2><button class="primary" onclick="showSection('add');resetForm()">＋ Add Product</button></div>
+    <div class="search-row">
+      <input id="searchInput" placeholder="Search product, SKU or supplier..." oninput="renderProducts()">
+      <select id="categoryFilter" onchange="renderProducts()"><option value="">All categories</option></select>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>PRODUCT</th><th>SKU</th><th>CATEGORY</th><th>PRICE</th><th>QUANTITY</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody id="productBody"></tbody></table></div>
+  </div>
+</section>
+
+<section id="add" class="section">
+  <div class="panel">
+    <div class="panel-head"><h2 id="formTitle">Add New Product</h2></div>
+    <form id="productForm">
+      <input type="hidden" id="productId">
+      <div class="form-grid">
+        <div class="field"><label>Product Name *</label><input id="name" required placeholder="Enter product name"></div>
+        <div class="field"><label>SKU *</label><input id="sku" required placeholder="e.g. LAP001"></div>
+        <div class="field"><label>Category *</label><input id="category" required placeholder="e.g. Electronics"></div>
+        <div class="field"><label>Price (₹) *</label><input id="price" type="number" min="0" step="0.01" required></div>
+        <div class="field"><label>Quantity *</label><input id="quantity" type="number" min="0" required></div>
+        <div class="field"><label>Reorder Level</label><input id="reorderLevel" type="number" min="0" value="5"></div>
+        <div class="field"><label>Supplier</label><input id="supplier" placeholder="Supplier name"></div>
+      </div>
+      <div class="form-actions"><button class="primary" type="submit">Save Product</button><button class="secondary" type="button" onclick="showSection('products')">Cancel</button></div>
+    </form>
+  </div>
+</section>
+
+<section id="lowstock" class="section">
+  <div class="panel">
+    <div class="panel-head"><h2>Low Stock Alerts</h2><span class="pill low">Needs attention</span></div>
+    <div class="notice">Products at or below their reorder level are listed here.</div>
+    <div class="table-wrap"><table><thead><tr><th>PRODUCT</th><th>SKU</th><th>QUANTITY</th><th>REORDER LEVEL</th><th>SUPPLIER</th></tr></thead><tbody id="lowBody"></tbody></table></div>
+  </div>
+</section>
+
+<section id="reports" class="section">
+  <div class="cards">
+    <div class="card"><div class="card-icon">📦</div><div class="card-label">Total Products</div><div class="card-value" id="reportProducts">0</div></div>
+    <div class="card"><div class="card-icon">🧮</div><div class="card-label">Total Units</div><div class="card-value" id="reportUnits">0</div></div>
+    <div class="card"><div class="card-icon">💰</div><div class="card-label">Stock Value</div><div class="card-value" id="reportValue">₹0</div></div>
+    <div class="card"><div class="card-icon">📊</div><div class="card-label">Average Price</div><div class="card-value" id="reportAverage">₹0</div></div>
+  </div>
+  <div class="panel"><h2>Inventory Summary</h2><p class="subtitle" style="margin-top:12px">These figures are calculated from your saved products.</p></div>
+</section>
+</main>
+</div>
+
+<script>
+const API='/api/products';
+let products=[];
+
+function showSection(id,button){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav').forEach(n=>n.classList.remove('active'));
+  if(button)button.classList.add('active');
+  const titles={dashboard:'Dashboard Overview',products:'Product Management',add:'Product Details',lowstock:'Low Stock Alerts',reports:'Inventory Reports'};
+  document.getElementById('pageTitle').textContent=titles[id];
+  if(id==='products')renderProducts();
+  if(id==='lowstock')renderLowStock();
+  if(id==='reports')loadReports();
+}
+function openProducts(){showSection('products',document.querySelectorAll('.nav')[1])}
+function money(n){return '₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2})}
+async function request(url,options={}){
+  const response=await fetch(url,{headers:{'Content-Type':'application/json'},...options});
+  let data={};
+  try{data=await response.json()}catch(e){}
+  if(!response.ok)throw new Error(data.message||data.error||'Request failed');
+  return data;
+}
+async function loadDashboard(){
+  try{
+    const data=await request(API+'?limit=100');
+    products=Array.isArray(data)?data:(data.products||data.items||[]);
+    updateStats();
+    renderProducts();
+    renderRecent();
+    renderLowStock();
+    loadReports();
+  }catch(error){alert('Could not load products: '+error.message)}
+}
+function updateStats(){
+  const units=products.reduce((s,p)=>s+Number(p.quantity||0),0);
+  const value=products.reduce((s,p)=>s+Number(p.price||0)*Number(p.quantity||0),0);
+  const low=products.filter(p=>Number(p.quantity||0)<=Number(p.reorderLevel||0));
+  document.getElementById('totalProducts').textContent=products.length;
+  document.getElementById('totalUnits').textContent=units;
+  document.getElementById('stockValue').textContent=money(value);
+  document.getElementById('lowCount').textContent=low.length;
+}
+function status(p){
+  return Number(p.quantity||0)<=Number(p.reorderLevel||0)
+    ?'<span class="pill low">Low Stock</span>'
+    :'<span class="pill">In Stock</span>';
+}
+function renderRecent(){
+  const list=products.slice(0,5);
+  document.getElementById('recentBody').innerHTML=list.length?list.map(p=>`<tr><td>${safe(p.name)}</td><td>${safe(p.sku)}</td><td>${safe(p.category)}</td><td>${money(p.price)}</td><td>${p.quantity}</td><td>${status(p)}</td></tr>`).join(''):'<tr><td colspan="6" class="empty">No products added yet</td></tr>';
+}
+function renderProducts(){
+  const term=(document.getElementById('searchInput').value||'').toLowerCase();
+  const cat=document.getElementById('categoryFilter').value;
+  const cats=[...new Set(products.map(p=>p.category).filter(Boolean))];
+  const filter=document.getElementById('categoryFilter');
+  const old=filter.value;
+  filter.innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option value="${safe(c)}">${safe(c)}</option>`).join('');
+  filter.value=cats.includes(old)?old:'';
+  const filtered=products.filter(p=>(!filter.value||p.category===filter.value)&&[p.name,p.sku,p.supplier,p.category].some(v=>String(v||'').toLowerCase().includes(term)));
+  document.getElementById('productBody').innerHTML=filtered.length?filtered.map(p=>`<tr>
+  <td>${safe(p.name)}</td><td>${safe(p.sku)}</td><td>${safe(p.category)}</td><td>${money(p.price)}</td><td>${p.quantity}</td><td>${status(p)}</td>
+  <td><div class="actions"><button class="small-btn" onclick="editProduct('${p._id||p.id}')">Edit</button><button class="small-btn" onclick="adjustStock('${p._id||p.id}')">Stock</button><button class="danger" onclick="deleteProduct('${p._id||p.id}')">Delete</button></div></td></tr>`).join(''):'<tr><td colspan="7" class="empty">No matching products found</td></tr>';
+}
+function renderLowStock(){
+  const low=products.filter(p=>Number(p.quantity||0)<=Number(p.reorderLevel||0));
+  document.getElementById('lowBody').innerHTML=low.length?low.map(p=>`<tr><td>${safe(p.name)}</td><td>${safe(p.sku)}</td><td>${p.quantity}</td><td>${p.reorderLevel||0}</td><td>${safe(p.supplier||'-')}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">No low-stock products</td></tr>';
+}
+function safe(value){
+  return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function resetForm(){
+  document.getElementById('productForm').reset();
+  document.getElementById('productId').value='';
+  document.getElementById('reorderLevel').value=5;
+  document.getElementById('formTitle').textContent='Add New Product';
+}
+async function editProduct(id){
+  try{
+    const p=await request(API+'/'+id);
+    const item=p.product||p;
+    document.getElementById('productId').value=item._id||item.id;
+    ['name','sku','category','price','quantity','reorderLevel','supplier'].forEach(k=>document.getElementById(k).value=item[k]??'');
+    document.getElementById('formTitle').textContent='Edit Product';
+    showSection('add');
+  }catch(e){alert('Could not open product: '+e.message)}
+}
+document.getElementById('productForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const id=document.getElementById('productId').value;
+  const item={};
+  ['name','sku','category','supplier'].forEach(k=>item[k]=document.getElementById(k).value.trim());
+  ['price','quantity','reorderLevel'].forEach(k=>item[k]=Number(document.getElementById(k).value||0));
+  try{
+    await request(id?API+'/'+id:API,{method:id?'PUT':'POST',body:JSON.stringify(item)});
+    alert(id?'Product updated successfully':'Product added successfully');
+    resetForm();
+    await loadDashboard();
+    showSection('products',document.querySelectorAll('.nav')[1]);
+  }catch(error){alert('Could not save product: '+error.message)}
+});
+async function adjustStock(id){
+  const amount=prompt('Enter stock change. Use a positive number to add stock or a negative number to remove stock:');
+  if(amount===null)return;
+  const change=Number(amount);
+  if(!Number.isInteger(change)||change===0){alert('Please enter a non-zero whole number.');return}
+  try{
+    await request(API+'/'+id+'/stock',{method:'PATCH',body:JSON.stringify({change})});
+    alert('Stock updated successfully');
+    await loadDashboard();
+  }catch(e){alert('Could not update stock: '+e.message)}
+}
+async function deleteProduct(id){
+  if(!confirm('Are you sure you want to permanently delete this product?'))return;
+  try{
+    await request(API+'/'+id,{method:'DELETE'});
+    alert('Product deleted');
+    await loadDashboard();
+  }catch(e){alert('Could not delete product: '+e.message)}
+}
+async function loadReports(){
+  try{
+    const data=await request(API+'/summary');
+    const s=data.summary||data;
+    document.getElementById('reportProducts').textContent=s.totalItems??products.length;
+    document.getElementById('reportUnits').textContent=s.totalQuantity??products.reduce((a,p)=>a+Number(p.quantity||0),0);
+    const value=s.totalStockValue??products.reduce((a,p)=>a+Number(p.price||0)*Number(p.quantity||0),0);
+    document.getElementById('reportValue').textContent=money(value);
+    const avg=s.avgPrice??(products.length?products.reduce((a,p)=>a+Number(p.price||0),0)/products.length:0);
+    document.getElementById('reportAverage').textContent=money(avg);
+  }catch(e){
+    const units=products.reduce((a,p)=>a+Number(p.quantity||0),0);
+    const value=products.reduce((a,p)=>a+Number(p.price||0)*Number(p.quantity||0),0);
+    document.getElementById('reportProducts').textContent=products.length;
+    document.getElementById('reportUnits').textContent=units;
+    document.getElementById('reportValue').textContent=money(value);
+    document.getElementById('reportAverage').textContent=money(products.length?products.reduce((a,p)=>a+Number(p.price||0),0)/products.length:0);
+  }
+}
+loadDashboard();
+</script>
+</body>
+</html>
